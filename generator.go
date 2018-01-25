@@ -55,13 +55,23 @@ func NewV2(domain byte) UUID {
 	return global.NewV2(domain)
 }
 
-// NewV3 returns UUID based on MD5 hash of namespace UUID and name.
+// NewV3 returns a UUID based on the MD5 hash of namespace UUID and name.
 func NewV3(ns UUID, name string) UUID {
 	return global.NewV3(ns, name)
 }
 
-// NewV4 returns random generated UUID.
+// NewV4 returns a randomly generated UUID.
 func NewV4() UUID {
+	u, err := ID4()
+	if err != nil {
+		panic(err)
+	}
+	return u
+}
+
+// ID4 returns a randomly generated UUID, or an error if there was not enough
+// entropy.
+func ID4() (UUID, error) {
 	return global.NewV4()
 }
 
@@ -89,7 +99,7 @@ type generator struct {
 	hardwareAddr  [6]byte
 }
 
-func newDefaultGenerator() Generator {
+func newDefaultGenerator() *generator {
 	return &generator{}
 }
 
@@ -148,13 +158,15 @@ func (g *generator) NewV3(ns UUID, name string) UUID {
 }
 
 // NewV4 returns random generated UUID.
-func (g *generator) NewV4() UUID {
+func (g *generator) NewV4() (UUID, error) {
 	u := UUID{}
-	g.safeRandom(u[:])
+	if err := g.random(u[:]); err != nil {
+		return u, err
+	}
 	u.SetVersion(V4)
 	u.SetVariant(VariantRFC4122)
 
-	return u
+	return u, nil
 }
 
 // NewV5 returns UUID based on SHA-1 hash of namespace UUID and name.
@@ -171,35 +183,40 @@ func (g *generator) initStorage() {
 	g.initHardwareAddr()
 }
 
-func (g *generator) initClockSequence() {
+func (g *generator) initClockSequence() error {
 	buf := make([]byte, 2)
-	g.safeRandom(buf)
+	if err := g.random(buf); err != nil {
+		return err
+	}
 	g.clockSequence = binary.BigEndian.Uint16(buf)
+	return nil
 }
 
-func (g *generator) initHardwareAddr() {
+func (g *generator) initHardwareAddr() error {
 	interfaces, err := net.Interfaces()
 	if err == nil {
 		for _, iface := range interfaces {
 			if len(iface.HardwareAddr) >= 6 {
 				copy(g.hardwareAddr[:], iface.HardwareAddr)
-				return
+				return nil
 			}
 		}
 	}
 
 	// Initialize hardwareAddr randomly in case
 	// of real network interfaces absence
-	g.safeRandom(g.hardwareAddr[:])
+	if err := g.random(g.hardwareAddr[:]); err != nil {
+		return err
+	}
 
 	// Set multicast bit as recommended in RFC 4122
 	g.hardwareAddr[0] |= 0x01
+	return nil
 }
 
-func (g *generator) safeRandom(dest []byte) {
-	if _, err := rand.Read(dest); err != nil {
-		panic(err)
-	}
+func (g *generator) random(dest []byte) error {
+	_, err := rand.Read(dest)
+	return err
 }
 
 // Returns UUID v1/v2 storage state.

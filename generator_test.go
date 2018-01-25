@@ -102,6 +102,13 @@ func (s *genTestSuite) TestNewV4(c *C) {
 	c.Assert(u.Variant(), Equals, VariantRFC4122)
 }
 
+func (s *genTestSuite) TestID4(c *C) {
+	u, err := ID4()
+	c.Assert(err, IsNil)
+	c.Assert(u.Version(), Equals, V4)
+	c.Assert(u.Variant(), Equals, VariantRFC4122)
+}
+
 func (s *genTestSuite) BenchmarkNewV4(c *C) {
 	for i := 0; i < c.N; i++ {
 		NewV4()
