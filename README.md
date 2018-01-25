@@ -25,7 +25,7 @@ Use the `go` command:
 
 ## Requirements
 
-UUID package requires Go >= 1.2.
+UUID package requires Go >= 1.5.
 
 ## Example
 
@@ -34,6 +34,7 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/kevinburke/go.uuid"
 )
 
