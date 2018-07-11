@@ -10,9 +10,9 @@ race-test:
 
 $(MEGACHECK):
 ifeq ($(UNAME),Darwin)
-	curl --silent --location --output $(MEGACHECK) https://github.com/kevinburke/go-tools/releases/download/2018-01-25/megacheck-darwin-amd64
+	curl --silent --location --output $(MEGACHECK) https://github.com/kevinburke/go-tools/releases/download/2018-07-11/megacheck-darwin-amd64
 else
-	curl --silent --location --output $(MEGACHECK) https://github.com/kevinburke/go-tools/releases/download/2018-01-25/megacheck-linux-amd64
+	curl --silent --location --output $(MEGACHECK) https://github.com/kevinburke/go-tools/releases/download/2018-07-11/megacheck-linux-amd64
 endif
 	chmod +x $(MEGACHECK)
 
